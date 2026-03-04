@@ -819,19 +819,26 @@
             window.print();
         }
 
-        function checkAlarms() {
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            const timeStr = now.toTimeString().slice(0, 5);
-            
-            [...db.cases, ...db.reports].forEach(item => {
-                if(item.isAlarm === 'true' && item.alertDay === todayStr && item.alertTime === timeStr) {
-                    const banner = document.getElementById('alarm-banner');
-                    document.getElementById('alarm-text').innerText = `موعد: ${item.clientName} - ${item.charge}`;
-                    banner.classList.remove('hidden');
-                }
-            });
+       function checkAlarms() {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const timeStr = now.toTimeString().slice(0, 5);    
+    [...db.cases, ...db.reports].forEach(item => {
+        if(item.isAlarm === 'true' && item.alertDay === todayStr && item.alertTime === timeStr) {
+            // إظهار البانر داخل الموقع
+            const banner = document.getElementById('alarm-banner');
+            document.getElementById('alarm-text').innerText = `موعد: ${item.clientName} - ${item.charge}`;
+            banner.classList.remove('hidden');
+
+            // --- إضافة استدعاء المنبه الفعلي للهاتف هنا ---
+            if (typeof AndroidBridge !== "undefined") {
+                // ضبط المنبه ليعمل فوراً بصوت مرتفع جداً
+                AndroidBridge.setAlarm(1, "تنبيه قضائي هام", `موعد: ${item.clientName} - ${item.charge}`);
+                AndroidBridge.showNotification("تنبيه الموعد", `لديك موعد الآن: ${item.clientName}`);
+            }
         }
+    });
+}
 
         function dismissAlarm() {
             document.getElementById('alarm-banner').classList.add('hidden');
@@ -852,4 +859,5 @@
         };
     </script>
 </body>
+
 </html>
