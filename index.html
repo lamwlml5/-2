@@ -430,17 +430,21 @@
         let tempFiles = [];
 
         function exportDatabase() {
+    // 1. التأكد من وجود بيانات
     if (db.cases.length === 0 && db.reports.length === 0) {
         alert("لا توجد بيانات لتصديرها.");
-        return;}
+        return;
+    }
     
+    // 2. تحويل البيانات لنص
     const dataStr = JSON.stringify(db);
 
-    if (window.AndroidBridge) {
-        // نطلب من الأندرويد الحفظ في السحابة
+    // 3. التحقق هل نفتح من التطبيق أم المتصفح
+    if (window.AndroidBridge && typeof window.AndroidBridge.backupToDrive === "function") {
+        // ✅ هذا هو الأمر الذي يرفع للسحابة ولا يحفظ على الجهاز
         AndroidBridge.backupToDrive(dataStr);
     } else {
-        // إذا كان يفتح من متصفح عادي، نحمل الملف كالعادة
+        // ❌ إذا فتحت من متصفح خارجي، سيضطر للتحميل على الجهاز كالعادة
         const blob = new Blob([dataStr], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -927,6 +931,7 @@ window.updateFromDrive = function(jsonData) {
     </script>
 </body>
 </html>
+
 
 
 
