@@ -819,42 +819,19 @@
             window.print();
         }
 
-       // 2. دالة ضبط المنبهات في الأندرويد (تستدعى عند الحاجة)
-    function scheduleAndroidAlarms() {
-        if (!window.AndroidBridge) return;
-        const now = new Date().getTime();
-        const allItems = [...db.cases, ...db.reports];
-        
-        allItems.forEach(item => {
-            if (item.isAlarm === 'true' && item.alertDay && item.alertTime) {
-                const alarmDate = new Date(`${item.alertDay}T${item.alertTime}:00`).getTime();
-                const delayInSeconds = Math.floor((alarmDate - now) / 1000);
-                if (delayInSeconds > 0) {
-                    AndroidBridge.setAlarm(delayInSeconds, "تنبيه: " + (item.clientName || "موعد"), "لديك جلسة أو مهمة الآن");
+        function checkAlarms() {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().slice(0, 5);
+            
+            [...db.cases, ...db.reports].forEach(item => {
+                if(item.isAlarm === 'true' && item.alertDay === todayStr && item.alertTime === timeStr) {
+                    const banner = document.getElementById('alarm-banner');
+                    document.getElementById('alarm-text').innerText = `موعد: ${item.clientName} - ${item.charge}`;
+                    banner.classList.remove('hidden');
                 }
-            }
-        });
-    }
-
-
-
-
-// استدعي هذه الوظيفة مرة واحدة عند تحميل البيانات في موقعك
-scheduleAndroidAlarms();
-            // إظهار البانر داخل الموقع
-            const banner = document.getElementById('alarm-banner');
-            document.getElementById('alarm-text').innerText = `موعد: ${item.clientName} - ${item.charge}`;
-            banner.classList.remove('hidden');
-
-            // --- إضافة استدعاء المنبه الفعلي للهاتف هنا ---
-            if (typeof AndroidBridge !== "undefined") {
-                // ضبط المنبه ليعمل فوراً بصوت مرتفع جداً
-                AndroidBridge.setAlarm(1, "تنبيه قضائي هام", `موعد: ${item.clientName} - ${item.charge}`);
-                AndroidBridge.showNotification("تنبيه الموعد", `لديك موعد الآن: ${item.clientName}`);
-            }
+            });
         }
-    });
-}
 
         function dismissAlarm() {
             document.getElementById('alarm-banner').classList.add('hidden');
@@ -875,8 +852,4 @@ scheduleAndroidAlarms();
         };
     </script>
 </body>
-
 </html>
-
-
-
