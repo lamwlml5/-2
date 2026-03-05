@@ -430,19 +430,25 @@
         let tempFiles = [];
 
         function exportDatabase() {
-            if (db.cases.length === 0 && db.reports.length === 0) {
-                alert("لا توجد بيانات لتصديرها.");
-                return;
-            }
-            const dataStr = JSON.stringify(db, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `Lawyer_Pro_Backup_${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-        }
+    if (db.cases.length === 0 && db.reports.length === 0) {
+        alert("لا توجد بيانات لتصديرها.");
+        return;}
+    
+    const dataStr = JSON.stringify(db);
 
+    if (window.AndroidBridge) {
+        // نطلب من الأندرويد الحفظ في السحابة
+        AndroidBridge.backupToDrive(dataStr);
+    } else {
+        // إذا كان يفتح من متصفح عادي، نحمل الملف كالعادة
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Backup_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+    }
+}
         // 1. وظيفة الاستيراد اليدوي (من ملف على الهاتف)
 function importDatabase(event) {
     const file = event.target.files[0];
@@ -880,3 +886,4 @@ window.updateFromDrive = function(jsonData) {
     </script>
 </body>
 </html>
+
