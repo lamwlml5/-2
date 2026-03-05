@@ -443,23 +443,50 @@
             link.click();
         }
 
-        function importDatabase(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (confirm("سيتم استبدال البيانات الحالية، هل أنت متأكد؟")) {
-                        db = imported;
-                        localStorage.setItem('lawyer_master_pro', JSON.stringify(db));
-                        renderDisplay();
-                    }
-                } catch (err) { alert("خطأ في قراءة الملف"); }
-            };
-            reader.readAsText(file);
-        }
+        // 1. وظيفة الاستيراد اليدوي (من ملف على الهاتف)
+function importDatabase(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (confirm("سيتم استبدال جميع القضايا والمحاضر الحالية بالنسخة الاحتياطية، هل أنت متأكد؟")) {
+                    db = imported;
+                    localStorage.setItem('lawyer_master_pro', JSON.stringify(db));
+                    renderDisplay();
+                    // إشعار الأندرويد بالنجاح
+                    if (window.AndroidBridge) AndroidBridge.showToast("✅ تمت استعادة البيانات بنجاح");
+                }
+            } catch (err) { 
+                alert("خطأ في قراءة ملف النسخة الاحتياطية"); 
+            }
+        };
+        reader.readAsText(file);
+    }
+}
 
+// 2. وظيفة الاستعادة التلقائية (من Google Drive)
+function restoreFromCloud() {
+    if (window.AndroidBridge) {
+        AndroidBridge.restoreFromDrive(); 
+    } else {
+        alert("هذه الميزة تعمل فقط من داخل تطبيق الأندرويد");
+    }
+}
+
+// 3. (هام جداً) هذه الدالة يستدعيها التطبيق لإرسال البيانات للموقع
+window.updateFromDrive = function(jsonData) {
+    try {
+        const imported = JSON.parse(jsonData);
+        db = imported;
+        localStorage.setItem('lawyer_master_pro', JSON.stringify(db));
+        renderDisplay();
+        if (window.AndroidBridge) AndroidBridge.showToast("☁️ تم جلب البيانات من Google Drive بنجاح");
+    } catch (err) {
+        console.error("Cloud Restore Error");
+    }
+}
         function switchCategory(cat) {
     currentCategory = cat;
     const btnCases = document.getElementById('cat-cases');
