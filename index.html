@@ -449,35 +449,31 @@
         link.click();
     }
 }
-        // 1. وظيفة الاستيراد اليدوي (من ملف على الهاتف)
-function importDatabase(event) {
+        function importDatabase(event) {
+    // 1. الطريقة اليدوية (من ملف على الجهاز)
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const imported = JSON.parse(e.target.result);
-                if (confirm("سيتم استبدال جميع القضايا والمحاضر الحالية بالنسخة الاحتياطية، هل أنت متأكد؟")) {
+                if (confirm("سيتم استبدال البيانات الحالية بالنسخة الاحتياطية، هل أنت متأكد؟")) {
                     db = imported;
                     localStorage.setItem('lawyer_master_pro', JSON.stringify(db));
                     renderDisplay();
-                    // إشعار الأندرويد بالنجاح
-                    if (window.AndroidBridge) AndroidBridge.showToast("✅ تمت استعادة البيانات بنجاح");
+                    if (window.AndroidBridge) AndroidBridge.showToast("تمت الاستعادة بنجاح");
                 }
-            } catch (err) { 
-                alert("خطأ في قراءة ملف النسخة الاحتياطية"); 
-            }
+            } catch (err) { alert("خطأ في قراءة الملف"); }
         };
         reader.readAsText(file);
     }
 }
 
-// 2. وظيفة الاستعادة التلقائية (من Google Drive)
+// 2. الطريقة التلقائية (من Google Drive)
 function restoreFromCloud() {
     if (window.AndroidBridge) {
         AndroidBridge.restoreFromDrive(); 
-    } else {
-        alert("هذه الميزة تعمل فقط من داخل تطبيق الأندرويد");
+        // ملاحظة: سيقوم التطبيق بالبحث عن آخر ملف محفوظ في سحابة جوجل واستدعاء دالة تحديث في موقعك
     }
 }
 
@@ -875,15 +871,35 @@ window.updateFromDrive = function(jsonData) {
     // 1. تحديث أزرار الصفة (مدعي/مدعى عليه)
     if (typeof updateRoleButtons === 'function') updateRoleButtons();
     
-    // 2. عرض كروت القضايا والمحاضر
+    // 2. ميزة الاستعادة التلقائية من السحابة
+    // إذا كان التطبيق فارغاً (أول مرة فتح أو بعد مسح البيانات)
+    if (db.cases.length === 0 && db.reports.length === 0) {
+        if (window.AndroidBridge) {
+            console.log("النظام فارغ، جاري محاولة الاستعادة من Google Drive...");
+            AndroidBridge.restoreFromDrive();
+        }
+    }
+
+    // 3. عرض السجلات الحالية
     if (typeof renderDisplay === 'function') renderDisplay();
 
-    // 3. الأمر السحري: رسم الأيقونات فوراً في كامل الصفحة
+    // 4. رسم الأيقونات (Lucide)
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
-        };
+
+    // 5. جدولة المنبهات في نظام الأندرويد
+    if (typeof scheduleAndroidAlarms === 'function') {
+        scheduleAndroidAlarms();
+    }
+
+    // 6. بدء فحص المواعيد كل دقيقة (للبانر الداخلي)
+    if (typeof checkAlarms === 'function') {
+        setInterval(checkAlarms, 60000);
+    }
+};
     </script>
 </body>
 </html>
+
 
