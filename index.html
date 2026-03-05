@@ -844,31 +844,7 @@
     });
 }
 
-// استدعي هذه الوظيفة مرة واحدة عند تحميل البيانات في موقعك
-scheduleAndroidAlarms();function scheduleAndroidAlarms() {
-    if (!window.AndroidBridge) return; // التأكد أننا داخل التطبيق
 
-    const now = new Date().getTime();
-    
-    [...db.cases, ...db.reports].forEach(item => {
-        if (item.isAlarm === 'true') {
-            // تحويل alertDay و alertTime لموعد حقيقي
-            const alarmDate = new Date(`${item.alertDay}T${item.alertTime}:00`).getTime();
-            
-            // حساب الفارق بالثواني
-            const delayInSeconds = Math.floor((alarmDate - now) / 1000);
-
-            // إذا كان الموعد في المستقبل، نقوم بضبطه في الأندرويد
-            if (delayInSeconds > 0) {
-                AndroidBridge.setAlarm(
-                    delayInSeconds, 
-                    "تنبيه: " + (item.caseName || "موعد هام"), 
-                    "لديك جلسة أو تقرير مطلوب الآن"
-                );
-            }
-        }
-    });
-}
 
 // استدعي هذه الوظيفة مرة واحدة عند تحميل البيانات في موقعك
 scheduleAndroidAlarms();
@@ -908,4 +884,5 @@ scheduleAndroidAlarms();
 </body>
 
 </html>
+
 
