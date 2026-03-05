@@ -674,7 +674,33 @@ window.updateFromDrive = function(jsonData) {
             localStorage.setItem('lawyer_master_pro', JSON.stringify(db));
             toggleUI('list');
         }
+       function saveItem() {
+    // ... الأكواد الموجودة حالياً (تعريف الـ item وحفظه في الـ db) ...
 
+    // --- ضعه هنا بالضبط (قبل إغلاق الدالة وقبل toggleUI) ---
+    
+    if (item.isAlarm === 'true' && window.AndroidBridge) {
+        // 1. تحويل التاريخ والوقت لتنسيق يفهمه التقويم
+        const startTime = new Date(`${item.alertDay}T${item.alertTime}:00`).getTime();
+        const endTime = startTime + (60 * 60 * 1000); // جعل مدة الجلسة ساعة واحدة
+
+        // 2. إرسال الأمر للأندرويد ليضعه في تقويم جوجل
+        AndroidBridge.addEventToCalendar(
+            "جلسة: " + item.clientName, 
+            item.court || "المحكمة", 
+            startTime, 
+            endTime
+        );
+    }
+
+    // ----------------------------------------------------
+
+    localStorage.setItem('lawyer_master_pro', JSON.stringify(db));
+    toggleUI('list'); // للعودة للقائمة
+}
+
+
+      
         function renderDisplay() {
     const container = document.getElementById('cards-container');
     const searchInput = document.getElementById('searchInput');
@@ -901,5 +927,6 @@ window.updateFromDrive = function(jsonData) {
     </script>
 </body>
 </html>
+
 
 
