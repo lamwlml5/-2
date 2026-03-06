@@ -295,7 +295,7 @@
                 <input type="hidden" id="isAlarmActive" value="false">
             </div>
 
-            <button onclick="saveItem()" class="w-full bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black py-5 rounded-[2rem] shadow-2xl flex items-center justify-center gap-3 text-lg active:scale-95 transition-all">
+            <button onclick="()" class="w-full bg-gradient-to-r from-amber-600 to-amber-700 text-white font-black py-5 rounded-[2rem] shadow-2xl flex items-center justify-center gap-3 text-lg active:scale-95 transition-all">
                 <i data-lucide="save"></i> حفظ البيانات بالكامل
             </button>
         </div>
@@ -487,12 +487,18 @@ window.updateFromDrive = function(jsonData) {
         const imported = JSON.parse(jsonData);
         db = imported;
         localStorage.setItem('lawyer_master_pro', JSON.stringify(db));
+      if (window.AndroidBridge && typeof window.AndroidBridge.saveLocalCopy === "function") {
+    // حفظ نسخة محلية للتطبيق لكي يتمكن الـ WorkManager من رفعه
+        ا تلقائياً في الخلفية
+    AndroidBridge.saveLocalCopy(JSON.stringify(db));
+}
         renderDisplay();
         if (window.AndroidBridge) AndroidBridge.showToast("☁️ تم جلب البيانات من Google Drive بنجاح");
     } catch (err) {
         console.error("Cloud Restore Error");
     }
 }
+      
         function switchCategory(cat) {
     currentCategory = cat;
     const btnCases = document.getElementById('cat-cases');
@@ -931,6 +937,7 @@ window.updateFromDrive = function(jsonData) {
     </script>
 </body>
 </html>
+
 
 
 
